@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {View, StyleSheet, Text, Animated} from 'react-native';
 
 import {Header, Days} from '.';
-import {useCalendar} from '../DatePicker';
+import {useCalendar} from '../calendarContext';
 
 const Calendar = () => {
   const {options, state, utils, onSelectedChange} = useCalendar();

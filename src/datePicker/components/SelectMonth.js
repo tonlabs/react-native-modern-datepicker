@@ -11,7 +11,7 @@ import {
   I18nManager,
 } from 'react-native';
 
-import {useCalendar} from '../DatePicker';
+import {useCalendar} from '../calendarContext';
 
 const SelectMonth = () => {
   const {
