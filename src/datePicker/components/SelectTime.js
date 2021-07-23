@@ -115,7 +115,7 @@ const TimeScroller = ({title, data, onChange}) => {
 };
 
 const SelectTime = () => {
-  const {options, state, utils, minuteInterval,  minimumTime, maximumTime, mode, onTimeChange} = useCalendar();
+  const {options, state, utils, minuteInterval, minimumTime, maximumTime, mode, onTimeChange} = useCalendar();
   const [mainState, setMainState] = state;
   const [show, setShow] = useState(false);
   const [time, setTime] = useState({
@@ -183,13 +183,17 @@ const SelectTime = () => {
   ];
 
   function numberRange (start, end) {
-    return new Array(end - start).fill().map((d, i) => i + start);
+    if(start > end){
+      [start,end] = [end, start]
+    }
+    return Array(end - start + 1).fill().map((_, idx) => start + idx)
   }
 
   const minHour = minimumTime ? new Date(minimumTime).getHours() : 0;
   const maxHour = maximumTime ? new Date(maximumTime).getHours() : 23;
-  const minMinute = minimumTime ? new Date(minimumTime).getMinutes() : 1;
+  const minMinute = minimumTime ? new Date(minimumTime).getMinutes() : 0;
   const maxMinute = maximumTime ? new Date(maximumTime).getMinutes() : 60;
+
 
   return show ? (
     <Animated.View style={containerStyle}>
@@ -200,7 +204,7 @@ const SelectTime = () => {
       />
       <TimeScroller
         title={utils.config.minute}
-        data={numberRange(minHour, maxHour).filter(n => !(n % minuteInterval))}
+        data={numberRange(minMinute, maxMinute).filter(n => !(n % minuteInterval))}
         onChange={minute => setTime({...time, minute})}
       />
       <View style={style.footer}>
