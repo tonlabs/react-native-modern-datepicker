@@ -188,8 +188,8 @@ const SelectTime = () => {
 
   const minHour = minimumTime ? new Date(minimumTime).getHours() : 0;
   const maxHour = maximumTime ? new Date(maximumTime).getHours() : 23;
-  const minMinute = minimumTime new Date(minimumTime).getMinutes() : 1;
-  const maxMinute = maximumTime new Date(maximumTime).getMinutes() : 60;
+  const minMinute = minimumTime ? new Date(minimumTime).getMinutes() : 1;
+  const maxMinute = maximumTime ? new Date(maximumTime).getMinutes() : 60;
 
   return show ? (
     <Animated.View style={containerStyle}>
