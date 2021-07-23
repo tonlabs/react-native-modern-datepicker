@@ -24,7 +24,6 @@ const TimeScroller = ({title, data, onChange}) => {
   data = ['', '', ...data, '', ''];
 
   useEffect(() => {
-    console.log(data[2]);
     onChange(data[2]);
   },[])
 
@@ -200,6 +199,25 @@ const SelectTime = () => {
     },
   ];
 
+  const minMinutes = minimumTime ? new Date(minimumTime).getMinutes() : 0;
+  const maxMinutes =  maximumTime ? new Date(maximumTime).getMinutes() : 0;
+
+  function getMinutesArray(min=0, max=59) {
+    return numberRange(min, max).filter(n => !(n % minuteInterval));
+  }
+
+  function returnMinutes() {
+    switch (time.hour) {
+      case minHour:
+        return getMinutesArray(minMinutes);
+      case maxHour:
+        return getMinutesArray(0, maxMinutes);
+      default:
+        return getMinutesArray();
+    }
+  }
+
+
   return show ? (
     <Animated.View style={containerStyle}>
       <TimeScroller
@@ -209,7 +227,7 @@ const SelectTime = () => {
       />
       <TimeScroller
         title={utils.config.minute}
-        data={numberRange(0, 59).filter(n => !(n % minuteInterval))}
+        data={returnMinutes()}
         onChange={minute => setTime({...time, minute})}
       />
       <View style={style.footer}>
