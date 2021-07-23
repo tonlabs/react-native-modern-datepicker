@@ -24,6 +24,11 @@ const TimeScroller = ({title, data, onChange}) => {
   data = ['', '', ...data, '', ''];
 
   useEffect(() => {
+    console.log(data[2]);
+    onChange(data[2]);
+  },[])
+
+  useEffect(() => {
     scrollListener.current && clearInterval(scrollListener.current);
     scrollListener.current = scrollAnimatedValue.addListener(({value}) => (active.current = value));
 
@@ -125,12 +130,15 @@ const SelectTime = () => {
   });
   const style = styles(options);
   const openAnimation = useRef(new Animated.Value(0)).current;
+  const minHour = minimumTime ? new Date(minimumTime).getHours() : 0;
+  const maxHour = maximumTime ? new Date(maximumTime).getHours() : 23;
+
 
   useEffect(() => {
     show &&
       setTime({
         minute: 0,
-        hour: 0,
+        hour: minHour,
       });
   }, [show]);
 
@@ -146,8 +154,17 @@ const SelectTime = () => {
     });
   }, [mainState.timeOpen, openAnimation]);
 
+
+  function numberRange (start, end) {
+    if(start > end){
+      start = [end, start]
+    }
+    return Array(end - start + 1).fill().map((_, idx) => start + idx)
+  }
+
   const selectTime = () => {
     const newTime = utils.getDate(mainState.activeDate);
+    const  timeDate = new Date()
     newTime.hour(time.hour).minute(time.minute);
     setMainState({
       type: 'set',
@@ -161,7 +178,7 @@ const SelectTime = () => {
           )
         : '',
     });
-    onTimeChange(utils.getFormated(newTime, 'timeFormat'));
+    onTimeChange(new Date(timeDate.setHours(time.hour, time.minute, 0)));
     mode !== 'time' &&
       setMainState({
         type: 'toggleTime',
@@ -182,17 +199,6 @@ const SelectTime = () => {
       ],
     },
   ];
-
-  function numberRange (start, end) {
-    if(start > end){
-      start = [end, start]
-    }
-    return Array(end - start + 1).fill().map((_, idx) => start + idx)
-  }
-
-  const minHour = minimumTime ? new Date(minimumTime).getHours() : 0;
-  const maxHour = maximumTime ? new Date(maximumTime).getHours() : 23;
-  // todo: add minutes
 
   return show ? (
     <Animated.View style={containerStyle}>
