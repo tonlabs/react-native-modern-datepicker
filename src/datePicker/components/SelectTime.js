@@ -80,6 +80,7 @@ const TimeScroller = ({title, data, onChange}) => {
     );
   };
 
+
   return (
     <View style={style.row} onLayout={changeItemWidth}>
       <Text style={style.title}>{title}</Text>
@@ -184,16 +185,14 @@ const SelectTime = () => {
 
   function numberRange (start, end) {
     if(start > end){
-      [start,end] = [end, start]
+      start = [end, start]
     }
     return Array(end - start + 1).fill().map((_, idx) => start + idx)
   }
 
   const minHour = minimumTime ? new Date(minimumTime).getHours() : 0;
   const maxHour = maximumTime ? new Date(maximumTime).getHours() : 23;
-  const minMinute = minimumTime ? new Date(minimumTime).getMinutes() : 0;
-  const maxMinute = maximumTime ? new Date(maximumTime).getMinutes() : 60;
-
+  // todo: add minutes
 
   return show ? (
     <Animated.View style={containerStyle}>
@@ -204,7 +203,7 @@ const SelectTime = () => {
       />
       <TimeScroller
         title={utils.config.minute}
-        data={numberRange(minMinute, maxMinute).filter(n => !(n % minuteInterval))}
+        data={numberRange(0, 59).filter(n => !(n % minuteInterval))}
         onChange={minute => setTime({...time, minute})}
       />
       <View style={style.footer}>
