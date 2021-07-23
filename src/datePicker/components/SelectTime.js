@@ -136,7 +136,7 @@ const SelectTime = () => {
   useEffect(() => {
     show &&
       setTime({
-        minute: 0,
+        minute: minMinute,
         hour: minHour,
       });
   }, [show]);
