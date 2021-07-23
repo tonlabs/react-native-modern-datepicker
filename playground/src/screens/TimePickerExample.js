@@ -8,6 +8,8 @@ const TimePickerExample = () => {
       mode="time"
       minuteInterval={3}
       onTimeChange={time => alert(time)}
+      minimumTime={new Date('1972-01-01 12:00')}
+      maximumTime={new Date('1972-01-01 15:00')}
     />
   );
 };
