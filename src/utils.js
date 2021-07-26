@@ -79,29 +79,29 @@ class utils {
 
   getFormatedDate = (date = new Date(), format = 'YYYY/MM/DD') => moment(date).format(format);
 
-  getTime = (time) => this.getDate(time).format(this.config.timeFormat);
+  getTime = time => this.getDate(time).format(this.config.timeFormat);
 
   getToday = () => this.getFormated(m, 'dateFormat');
 
-  getMonthName = (month) => this.config.monthNames[month];
+  getMonthName = month => this.config.monthNames[month];
 
-  toPersianNumber = (value) => {
+  toPersianNumber = value => {
     const {isGregorian} = this.data;
     return isGregorian
       ? this.toEnglish(String(value))
-      : String(value).replace(/[0-9]/g, (w) =>
+      : String(value).replace(/[0-9]/g, w =>
           String.fromCharCode(w.charCodeAt(0) + '۰'.charCodeAt(0) - 48),
         );
   };
 
-  toEnglish = (value) => {
+  toEnglish = value => {
     const charCodeZero = '۰'.charCodeAt(0);
-    return value.replace(/[۰-۹]/g, (w) => w.charCodeAt(0) - charCodeZero);
+    return value.replace(/[۰-۹]/g, w => w.charCodeAt(0) - charCodeZero);
   };
 
-  getDate = (time) => moment(time, this.config.selectedFormat);
+  getDate = time => moment(time, this.config.selectedFormat);
 
-  getMonthYearText = (time) => {
+  getMonthYearText = time => {
     const {isGregorian} = this.data;
     const date = this.getDate(time);
     const year = this.toPersianNumber(isGregorian ? date.year() : date.jYear());
@@ -109,7 +109,7 @@ class utils {
     return `${month} ${year}`;
   };
 
-  checkMonthDisabled = (time) => {
+  checkMonthDisabled = time => {
     const {minimumDate, maximumDate, isGregorian} = this.data;
     const date = this.getDate(time);
     let disabled = false;
@@ -160,7 +160,7 @@ class utils {
     return validDate;
   };
 
-  getMonthDays = (time) => {
+  getMonthDays = time => {
     const {minimumDate, maximumDate, isGregorian} = this.data;
     let date = this.getDate(time);
     const currentMonthDays = isGregorian
@@ -196,7 +196,7 @@ class utils {
     const [changeWay, setChangeWay] = useState(null);
     const monthYearAnimation = useRef(new Animated.Value(0)).current;
 
-    const changeMonthAnimation = (type) => {
+    const changeMonthAnimation = type => {
       setChangeWay(type);
       setLastDate(activeDate);
       monthYearAnimation.setValue(1);
@@ -236,6 +236,31 @@ class utils {
     };
 
     return [{lastDate, shownAnimation, hiddenAnimation}, changeMonthAnimation];
+  };
+
+  validateTimeMinMax = (newTime, min, max) => {
+    const newHour = newTime.getHours();
+    const newMinute = newTime.getMinutes();
+
+    // comparing newTime with maxTime and minTime by hours and minutes, not considering the date
+    if (min) {
+      const minHour = min.getHours();
+      const minMinute = min.getMinutes();
+
+      if ((newHour === minHour && newMinute < minMinute) || newHour < minHour) {
+        return false;
+      }
+    }
+    if (max) {
+      const maxHour = max.getHours();
+      const maxMinute = max.getMinutes();
+
+      if ((newHour === maxHour && newMinute > maxMinute) || newHour > maxHour) {
+        return false;
+      }
+    }
+
+    return true;
   };
 }
 

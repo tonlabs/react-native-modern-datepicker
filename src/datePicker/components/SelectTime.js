@@ -8,9 +8,12 @@ import {
   Easing,
   TouchableOpacity,
   I18nManager,
+  Platform,
 } from 'react-native';
 
 import {useCalendar} from '../calendarContext';
+import {TimeInput} from './TimeInput';
+import {formatTime} from '../../../../UIKit/packages/flask/src/UIDateTimePickerView/UITimePicker/utils';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -25,7 +28,7 @@ const TimeScroller = ({title, data, onChange}) => {
 
   useEffect(() => {
     onChange(data[2]);
-  },[])
+  });
 
   useEffect(() => {
     scrollListener.current && clearInterval(scrollListener.current);
@@ -84,7 +87,6 @@ const TimeScroller = ({title, data, onChange}) => {
     );
   };
 
-
   return (
     <View style={style.row} onLayout={changeItemWidth}>
       <Text style={style.title}>{title}</Text>
@@ -120,7 +122,16 @@ const TimeScroller = ({title, data, onChange}) => {
 };
 
 const SelectTime = () => {
-  const {options, state, utils, minuteInterval, minimumTime, maximumTime, mode, onTimeChange} = useCalendar();
+  const {
+    options,
+    state,
+    utils,
+    minuteInterval,
+    minimumTime,
+    maximumTime,
+    mode,
+    onTimeChange,
+  } = useCalendar();
   const [mainState, setMainState] = state;
   const [show, setShow] = useState(false);
   const [time, setTime] = useState({
@@ -131,7 +142,7 @@ const SelectTime = () => {
   const openAnimation = useRef(new Animated.Value(0)).current;
   const minHour = minimumTime ? new Date(minimumTime).getHours() : 0;
   const maxHour = maximumTime ? new Date(maximumTime).getHours() : 23;
-
+  const minMinute = minimumTime ? new Date(minimumTime).getMinutes() : 0;
 
   useEffect(() => {
     show &&
@@ -139,7 +150,7 @@ const SelectTime = () => {
         minute: minMinute,
         hour: minHour,
       });
-  }, [show]);
+  }, [minHour, show, minMinute]);
 
   useEffect(() => {
     mainState.timeOpen && setShow(true);
@@ -153,17 +164,18 @@ const SelectTime = () => {
     });
   }, [mainState.timeOpen, openAnimation]);
 
-
-  function numberRange (start, end) {
-    if(start > end){
-      start = [end, start]
+  function numberRange(start, end) {
+    if (start > end) {
+      start = [end, start];
     }
-    return Array(end - start + 1).fill().map((_, idx) => start + idx)
+    return Array(end - start + 1)
+      .fill()
+      .map((_, idx) => start + idx);
   }
 
   const selectTime = () => {
     const newTime = utils.getDate(mainState.activeDate);
-    const  timeDate = new Date()
+    const timeDate = new Date();
     newTime.hour(time.hour).minute(time.minute);
     setMainState({
       type: 'set',
@@ -200,9 +212,9 @@ const SelectTime = () => {
   ];
 
   const minMinutes = minimumTime ? new Date(minimumTime).getMinutes() : 0;
-  const maxMinutes =  maximumTime ? new Date(maximumTime).getMinutes() : 0;
+  const maxMinutes = maximumTime ? new Date(maximumTime).getMinutes() : 0;
 
-  function getMinutesArray(min=0, max=59) {
+  function getMinutesArray(min = 0, max = 59) {
     return numberRange(min, max).filter(n => !(n % minuteInterval));
   }
 
@@ -217,19 +229,29 @@ const SelectTime = () => {
     }
   }
 
-
   return show ? (
     <Animated.View style={containerStyle}>
-      <TimeScroller
-        title={utils.config.hour}
-        data={numberRange(minHour, maxHour)}
-        onChange={hour => setTime({...time, hour})}
-      />
-      <TimeScroller
-        title={utils.config.minute}
-        data={returnMinutes()}
-        onChange={minute => setTime({...time, minute})}
-      />
+      {Platform.OS === 'web' ? (
+        <>
+          <Text>{`Please choose time from ${formatTime(minimumTime)} to ${formatTime(
+            maximumTime,
+          )}`}</Text>
+          <TimeInput onChange={newTime => setTime(newTime)} />
+        </>
+      ) : (
+        <>
+          <TimeScroller
+            title={utils.config.hour}
+            data={numberRange(minHour, maxHour)}
+            onChange={hour => setTime({...time, hour})}
+          />
+          <TimeScroller
+            title={utils.config.minute}
+            data={returnMinutes()}
+            onChange={minute => setTime({...time, minute})}
+          />
+        </>
+      )}
       <View style={style.footer}>
         <TouchableOpacity style={style.button} activeOpacity={0.8} onPress={selectTime}>
           <Text style={style.btnText}>{utils.config.timeSelect}</Text>
