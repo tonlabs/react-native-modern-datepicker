@@ -1,7 +1,7 @@
 import React from 'react';
 import {useCalendar} from '../calendarContext';
 
-export const TimeInput = () => {
+export const TimeInput = ({onChange, current}) => {
   const {utils, minTime, maxTime, onTimeChange} = useCalendar();
 
   const [time, setTime] = React.useState('');
@@ -15,8 +15,7 @@ export const TimeInput = () => {
         const minute = Number(newTimeArray[1]);
         const newTime = new Date(today.setHours(hour, minute, 0));
         setTime(val);
-        const isValidated = utils.validateTimeMinMax(newTime, minTime, maxTime);
-        isValidated ? onTimeChange({hour, minute}) : onTimeChange();
+        onChange(newTime)
       }
     },
     [utils, minTime, maxTime, onTimeChange],
@@ -24,8 +23,10 @@ export const TimeInput = () => {
 
   const inputStyle = {
     marginBottom: 40,
+    marginTop: 40,
     textAlign: 'center',
     fontSize: 35,
+    height: 50,
     width: 160,
     alignSelf: 'center',
     border: 'none', // remove useless border in web input
@@ -35,7 +36,7 @@ export const TimeInput = () => {
     style: inputStyle,
     name: 'time',
     type: 'time',
-    value: time, // current time or empty on mount
+    value: time ? time : current, // current time or empty on mount
     autoFocus: true,
     onChange: e => onChangeHandler(e.target.value), // its can return value only on end input, '' or '00:00'
   };

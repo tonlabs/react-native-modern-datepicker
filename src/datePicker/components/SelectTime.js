@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {
   View,
   StyleSheet,
@@ -13,22 +13,32 @@ import {
 
 import {useCalendar} from '../calendarContext';
 import {TimeInput} from './TimeInput';
-import {formatTime} from '../../../../UIKit/packages/flask/src/UIDateTimePickerView/UITimePicker/utils';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
-const TimeScroller = ({title, data, onChange}) => {
+const TimeScroller = ({title, data, onChange, current}) => {
   const {options, utils} = useCalendar();
   const [itemSize, setItemSize] = useState(0);
+  const [nativeEventWidth, setNativeEventWidth] = useState(0)
   const style = styles(options);
   const scrollAnimatedValue = useRef(new Animated.Value(0)).current;
   const scrollListener = useRef(null);
   const active = useRef(0);
+  const flatListRef = useRef();
+
   data = ['', '', ...data, '', ''];
 
   useEffect(() => {
-    onChange(data[2]);
-  });
+    onChange(current && data.length > 5 ? data[getIndexOfCurrentItem()] : data[2]);
+  }, []);
+
+  useEffect(()=>{
+    setTimeout(()=>{
+      if(data.length > 5){
+        getOffsetOfCurrent()
+      }
+    }, 100)
+  },[nativeEventWidth])
 
   useEffect(() => {
     scrollListener.current && clearInterval(scrollListener.current);
@@ -39,8 +49,24 @@ const TimeScroller = ({title, data, onChange}) => {
     };
   }, [scrollAnimatedValue]);
 
+  const getIndexOfCurrentItem = () => {
+    const closest = data.reduce(function(prevVal, currVal) {
+      return (Math.abs(currVal - current) < Math.abs(prevVal - current) ? currVal : prevVal);
+    });
+    const currentIndex = (i) => data.findIndex((i) => i == closest)
+    return currentIndex() > 0 ? currentIndex() : 2
+  }
+
+  const getOffsetOfCurrent = useCallback(() =>{
+    if(nativeEventWidth > 0){
+      const offset = Math.round((getIndexOfCurrentItem() - 2) * (nativeEventWidth / 5));
+      flatListRef.current.scrollToOffset({animated: true, offset: offset});
+    }
+  }, [nativeEventWidth]);
+
   const changeItemWidth = ({nativeEvent}) => {
     const {width} = nativeEvent.layout;
+    setNativeEventWidth(width)
     !itemSize && setItemSize(width / 5);
   };
 
@@ -91,6 +117,7 @@ const TimeScroller = ({title, data, onChange}) => {
     <View style={style.row} onLayout={changeItemWidth}>
       <Text style={style.title}>{title}</Text>
       <AnimatedFlatList
+        ref={flatListRef}
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         horizontal
@@ -131,25 +158,26 @@ const SelectTime = () => {
     maximumTime,
     mode,
     onTimeChange,
+    currentTime,
   } = useCalendar();
   const [mainState, setMainState] = state;
   const [show, setShow] = useState(false);
-  const [time, setTime] = useState({
-    minute: 0,
-    hour: 0,
-  });
+  const [isValidTime, setValidTime] = useState(true);
+  const [time, setTime] = useState(new Date());
   const style = styles(options);
   const openAnimation = useRef(new Animated.Value(0)).current;
   const minHour = minimumTime ? new Date(minimumTime).getHours() : 0;
   const maxHour = maximumTime ? new Date(maximumTime).getHours() : 23;
   const minMinute = minimumTime ? new Date(minimumTime).getMinutes() : 0;
+  const defaultTimeWeb = currentTime
+    ? utils.formatTime(currentTime)
+    : utils.formatTime(minimumTime);
+  const currentHour = currentTime ? new Date(currentTime).getHour() : null;
+  const currentMinute = currentTime ? new Date(currentTime).getMinutes() : null;
 
   useEffect(() => {
     show &&
-      setTime({
-        minute: minMinute,
-        hour: minHour,
-      });
+      setTime(new Date(new Date().setHours(minHour, minMinute, 0)));
   }, [minHour, show, minMinute]);
 
   useEffect(() => {
@@ -174,22 +202,20 @@ const SelectTime = () => {
   }
 
   const selectTime = () => {
-    const newTime = utils.getDate(mainState.activeDate);
-    const timeDate = new Date();
-    newTime.hour(time.hour).minute(time.minute);
+    const newTime = new Date(new Date().setHours(time.getHours(), time.getMinutes(), 0));
+    const newTimeForActiveDate = new Date(new Date(mainState.activeDate).setHours(
+      time.getHours(),
+      time.getMinutes(),
+      0,
+    ));
     setMainState({
       type: 'set',
-      activeDate: utils.getFormated(newTime),
+      activeDate: utils.formatTime(newTimeForActiveDate),
       selectedDate: mainState.selectedDate
-        ? utils.getFormated(
-            utils
-              .getDate(mainState.selectedDate)
-              .hour(time.hour)
-              .minute(time.minute),
-          )
+        ? new Date(new Date(mainState.selectedDate).setHours(time.getHours(), time.getMinutes(), 0))
         : '',
     });
-    onTimeChange(new Date(timeDate.setHours(time.hour, time.minute, 0)));
+    onTimeChange(newTime);
     mode !== 'time' &&
       setMainState({
         type: 'toggleTime',
@@ -215,11 +241,11 @@ const SelectTime = () => {
   const maxMinutes = maximumTime ? new Date(maximumTime).getMinutes() : 0;
 
   function getMinutesArray(min = 0, max = 59) {
-    return numberRange(min, max).filter(n => !(n % minuteInterval));
+    return numberRange(min, max).filter((n) => !(n % minuteInterval));
   }
 
   function returnMinutes() {
-    switch (time.hour) {
+    switch (time.getHours()) {
       case minHour:
         return getMinutesArray(minMinutes);
       case maxHour:
@@ -229,31 +255,43 @@ const SelectTime = () => {
     }
   }
 
+  function setNewTime(newTime) {
+    const isValidated = utils.validateTimeMinMax(new Date(newTime), minimumTime, maximumTime);
+    setValidTime(isValidated);
+    setTime(new Date(newTime));
+  }
+
   return show ? (
     <Animated.View style={containerStyle}>
       {Platform.OS === 'web' ? (
-        <>
-          <Text>{`Please choose time from ${formatTime(minimumTime)} to ${formatTime(
-            maximumTime,
-          )}`}</Text>
-          <TimeInput onChange={newTime => setTime(newTime)} />
-        </>
+        <View style={style.row}>
+          <Text style={style.title}>{`Please choose time from ${utils.formatTime(
+            minimumTime,
+          )} to ${utils.formatTime(maximumTime)}`}</Text>
+          <TimeInput current={defaultTimeWeb} onChange={(newTime) => setNewTime(newTime)} />
+        </View>
       ) : (
         <>
           <TimeScroller
             title={utils.config.hour}
             data={numberRange(minHour, maxHour)}
-            onChange={hour => setTime({...time, hour})}
+            onChange={(hour) => setNewTime(time.setHours(hour))}
+            current={13}
           />
           <TimeScroller
             title={utils.config.minute}
             data={returnMinutes()}
-            onChange={minute => setTime({...time, minute})}
+            onChange={(minute) => setNewTime(time.setMinutes(minute))}
+            current={22}
           />
         </>
       )}
       <View style={style.footer}>
-        <TouchableOpacity style={style.button} activeOpacity={0.8} onPress={selectTime}>
+        <TouchableOpacity
+          disabled={Platform.OS === 'web' ? !isValidTime : false}
+          style={[!isValidTime && {opacity: 0.5}, style.button]}
+          activeOpacity={0.8}
+          onPress={selectTime}>
           <Text style={style.btnText}>{utils.config.timeSelect}</Text>
         </TouchableOpacity>
         {mode !== 'time' && (
@@ -273,7 +311,7 @@ const SelectTime = () => {
   ) : null;
 };
 
-const styles = theme =>
+const styles = (theme) =>
   StyleSheet.create({
     container: {
       position: 'absolute',

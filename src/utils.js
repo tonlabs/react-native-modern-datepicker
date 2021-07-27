@@ -239,8 +239,8 @@ class utils {
   };
 
   validateTimeMinMax = (newTime, min, max) => {
-    const newHour = newTime.getHours();
-    const newMinute = newTime.getMinutes();
+    const newHour = new Date(newTime).getHours();
+    const newMinute = new Date(newTime).getMinutes();
 
     // comparing newTime with maxTime and minTime by hours and minutes, not considering the date
     if (min) {
@@ -262,6 +262,21 @@ class utils {
 
     return true;
   };
+
+  // Format time: Date to time: string like 00:00
+  formatTime = (value?: Date): string => {
+    if (value) {
+      const hoursValue = new Date(value).getHours();
+      const minutesValue = new Date(value).getMinutes();
+      const formattedHours = hoursValue < 10 ? `0${hoursValue}` : hoursValue;
+      const formattedMinutes =
+          minutesValue < 10 ? `0${minutesValue}` : minutesValue;
+
+      return `${formattedHours}:${formattedMinutes}`;
+    }
+    return '00:00';
+  };
+
 }
 
 export {utils};

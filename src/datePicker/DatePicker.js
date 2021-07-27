@@ -43,7 +43,8 @@ const DatePicker = props => {
     options: {...options, ...props.options},
     utils: calendarUtils,
     state: useReducer(reducer, {
-      activeDate: props.current || calendarUtils.getToday(),
+      activeDate: props.currentDate || calendarUtils.getToday(), // Date in calendar also save time
+      currentTime: props.currentTime || calendarUtils.getTime(), // current time for timepicker
       selectedDate: props.selected
         ? calendarUtils.getFormated(calendarUtils.getDate(props.selected))
         : '',
@@ -82,8 +83,8 @@ const DatePicker = props => {
   return (
     <CalendarContext.Provider value={contextValue}>
       <View
-        style={[style.container, {minHeight}, props.style]}
-        onLayout={({nativeEvent}) => setMinHeight(nativeEvent.layout.width * 0.9 + 55)}>
+          style={[style.container, {minHeight}, props.style]}
+          onLayout={({nativeEvent}) => setMinHeight(nativeEvent.layout.width * 0.9 + 55)}>
         {renderBody()}
       </View>
     </CalendarContext.Provider>
@@ -146,12 +147,13 @@ DatePicker.propTypes = {
   onMonthYearChange: PropTypes.func,
   onTimeChange: PropTypes.func,
   onDateChange: PropTypes.func,
-  current: PropTypes.string,
   selected: PropTypes.string,
   minimumDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
   maximumDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
-  minimumTime:  PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
-  maximumTime:  PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+  minimumTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+  maximumTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+  currentTime: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
+  currentDate: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.instanceOf(Date)]),
   selectorStartingYear: PropTypes.number,
   selectorEndingYear: PropTypes.number,
   disableDateChange: PropTypes.bool,
