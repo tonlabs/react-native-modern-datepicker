@@ -4,13 +4,12 @@ import {
   StyleSheet,
   Text,
   Animated,
-  FlatList,
   Easing,
   TouchableOpacity,
   I18nManager,
   Platform,
 } from 'react-native';
-
+import { FlatList } from "react-native-gesture-handler";
 import {useCalendar} from '../calendarContext';
 import {TimeInput} from './TimeInput';
 
@@ -34,10 +33,8 @@ const TimeScroller = ({title, data, onChange, current}) => {
 
   useEffect(()=>{
     setTimeout(()=>{
-      if(data.length > 5){
         getOffsetOfCurrent()
-      }
-    }, 100)
+    }, 200)
   },[nativeEventWidth])
 
   useEffect(() => {
