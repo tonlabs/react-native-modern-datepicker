@@ -276,13 +276,13 @@ const SelectTime = () => {
             title={utils.config.hour}
             data={numberRange(minHour, maxHour)}
             onChange={(hour) => setNewTime(time.setHours(hour))}
-            current={13}
+            current={currentHour}
           />
           <TimeScroller
             title={utils.config.minute}
             data={returnMinutes()}
             onChange={(minute) => setNewTime(time.setMinutes(minute))}
-            current={22}
+            current={currentMinute}
           />
         </>
       )}
