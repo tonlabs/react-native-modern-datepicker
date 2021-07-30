@@ -111,7 +111,7 @@ class utils {
 
   checkMonthDisabled = time => {
     const {minimumDate, maximumDate, isGregorian} = this.data;
-    const date = this.getDate(time);
+    const date = moment(time);
     let disabled = false;
     if (minimumDate) {
       const lastDayInMonth = isGregorian ? date.date(29) : date.jDate(29);
@@ -174,10 +174,10 @@ class utils {
         const thisDay = isGregorian ? date.date(n + 1) : date.jDate(n + 1);
         let disabled = false;
         if (minimumDate) {
-          disabled = thisDay < this.getDate(minimumDate);
+          disabled = new Date(date).setHours(0,0,0) < new Date(minimumDate).setHours(0,0,0);
         }
         if (maximumDate && !disabled) {
-          disabled = thisDay > this.getDate(maximumDate);
+          disabled = new Date(date).setHours(0,0,0) > new Date(minimumDate).setHours(0,0,0);
         }
 
         date = this.getDate(time);
