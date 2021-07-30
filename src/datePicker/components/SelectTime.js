@@ -12,7 +12,6 @@ import {
 import { FlatList } from "react-native-gesture-handler";
 import {useCalendar} from '../calendarContext';
 import {TimeInput} from './TimeInput';
-import validate from "react-native-web/dist/exports/StyleSheet/validate";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
