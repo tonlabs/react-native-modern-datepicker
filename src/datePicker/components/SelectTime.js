@@ -12,6 +12,7 @@ import {
 import { FlatList } from "react-native-gesture-handler";
 import {useCalendar} from '../calendarContext';
 import {TimeInput} from './TimeInput';
+import validate from "react-native-web/dist/exports/StyleSheet/validate";
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -166,6 +167,7 @@ const SelectTime = () => {
   const minHour = minimumTime ? new Date(minimumTime).getHours() : 0;
   const maxHour = maximumTime ? new Date(maximumTime).getHours() : 23;
   const minMinute = minimumTime ? new Date(minimumTime).getMinutes() : 0;
+  const maxMinute = maximumTime ? new Date(maximumTime).getMinutes() : 0;
   const defaultTimeWeb = currentTime
     ? utils.formatTime(currentTime)
     : utils.formatTime(minimumTime);
@@ -252,10 +254,24 @@ const SelectTime = () => {
     }
   }
 
-  function setNewTime(newTime) {
-    const isValidated = utils.validateTimeMinMax(new Date(newTime), minimumTime, maximumTime);
-    setValidTime(isValidated);
-    setTime(new Date(newTime));
+  function updateTime(time, isHour){
+    let newTime = new Date(time)
+    if(isHour){
+      const curMinutes = new Date(time).getMinutes()
+      const newHour = new Date(time).getHours()
+      if(newHour === minHour){
+        if(curMinutes < new Date(minimumTime).getMinutes()){
+          newTime = newTime.setHours(newHour, minMinute)
+        }
+      } else if(newHour === maxHour) {
+          if (curMinutes > new Date(maximumTime).getMinutes()) {
+            newTime = newTime.setHours(newHour, maxMinute)
+          }
+        }
+      }
+      const isValidated = utils.validateTimeMinMax(new Date(newTime), minimumTime, maximumTime);
+      setValidTime(isValidated);
+      setTime(new Date(newTime))
   }
 
   return show ? (
@@ -272,13 +288,13 @@ const SelectTime = () => {
           <TimeScroller
             title={utils.config.hour}
             data={numberRange(minHour, maxHour)}
-            onChange={(hour) => setNewTime(time.setHours(hour))}
+            onChange={(hour) => updateTime(time.setHours(hour), true)}
             current={currentHour}
           />
           <TimeScroller
             title={utils.config.minute}
             data={returnMinutes()}
-            onChange={(minute) => setNewTime(time.setMinutes(minute))}
+            onChange={(minute) => updateTime(time.setMinutes(minute), false)}
             current={currentMinute}
           />
         </>

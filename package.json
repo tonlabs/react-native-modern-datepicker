@@ -41,17 +41,18 @@
   ],
   "dependencies": {
     "moment-jalaali": "^0.9.2",
-    "prop-types": "^15.7.2"
+    "prop-types": "^15.7.2",
+    "react-native-gesture-handler": "^1.10.3"
   },
   "peerDependencies": {
     "react-native": ">=0.59"
   },
   "devDependencies": {
-    "prettier": "^1.18.2",
     "@babel/core": "^7.5.5",
     "@babel/runtime": "^7.5.5",
     "@react-native-community/eslint-config": "^0.0.5",
     "eslint": "^6.3.0",
-    "metro-react-native-babel-preset": "^0.56.0"
+    "metro-react-native-babel-preset": "^0.56.0",
+    "prettier": "^1.18.2"
   }
 }
