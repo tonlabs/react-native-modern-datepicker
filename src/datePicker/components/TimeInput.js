@@ -1,10 +1,21 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useCalendar} from '../calendarContext';
 
 export const TimeInput = ({onChange, current}) => {
   const {utils, minTime, maxTime, onTimeChange} = useCalendar();
 
+  const inputRef = React.useRef(null)
+
   const [time, setTime] = React.useState('');
+
+  useEffect(()=>{
+    setTimeout(()=>{
+      /**
+       * fast autofocus on load affects the height of the parent element, so we have to use a timeout to wait for the parent animation
+       */
+      inputRef.current.focus();
+    }, 500)
+  },[])
 
   const onChangeHandler = React.useCallback(
     val => {
@@ -33,11 +44,12 @@ export const TimeInput = ({onChange, current}) => {
   };
 
   const inputOptions = {
+    ref: inputRef,
     style: inputStyle,
     name: 'time',
     type: 'time',
     value: time ? time : current, // current time or empty on mount
-    autoFocus: true,
+    autoFocus: false,
     onChange: e => onChangeHandler(e.target.value), // its can return value only on end input, '' or '00:00'
   };
 
