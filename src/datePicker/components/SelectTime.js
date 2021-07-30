@@ -280,7 +280,7 @@ const SelectTime = () => {
           <Text style={style.title}>{`Please choose time from ${utils.formatTime(
             minimumTime,
           )} to ${utils.formatTime(maximumTime)}`}</Text>
-          <TimeInput current={defaultTimeWeb} onChange={(newTime) => setNewTime(newTime)} />
+          <TimeInput current={defaultTimeWeb} onChange={(newTime) => updateTime(newTime)} />
         </View>
       ) : (
         <>
